@@ -2,10 +2,6 @@
     "configurations": [
         {
             "name": "AVR",
-            "includePath": [
-                "/usr/avr/include/**",
-                "${workspaceFolder}/**"
-            ],
             "defines": [
                 "__AVR_ATtiny2313A__"
             ],
