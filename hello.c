@@ -2,7 +2,9 @@
 #define F_CPU 1000000UL
 #endif
 
+#include <avr/interrupt.h>
 #include <avr/io.h>
+#include <avr/sleep.h>
 #include <string.h>
 #include <util/delay.h>
 
@@ -30,21 +32,38 @@ void println(char* s)
 
   sendchar('\r');
   sendchar('\n');
+
+  // Wait until TX is complete before going to sleep.
+  // Glitches stop around 5ms. Double this.
+  _delay_ms(10);
+}
+
+void timer_begin(void)
+{
+  TCCR1A = 0x00; // Normal counter mode
+  OCR1A = 15625; // OC to 1 second's worth of cycles
+  TIMSK |= _BV(OCIE1A); // Enable OC interrupt
+  TCCR1B |= _BV(CS11) | _BV(CS10); // Start timer at F_CPU/64 (15625 Hz)
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+  TCNT1 = 0;
+  sleep_disable();
 }
 
 int main(void)
 {
-  serial_begin();
   DDRD = _BV(6);
+  serial_begin();
+  timer_begin();
+  sei();
 
   while(1)
   {
-    PORTD |= _BV(6);
-    _delay_ms(500);
-    PORTD &= ~_BV(6);
-    _delay_ms(500);
-
+    PORTD ^= _BV(6);
     println("hello");
+    sleep_mode();
   }
 
   return 0;
