@@ -13,7 +13,7 @@
 # FUSES ........ Parameters for avrdude to flash the fuses appropriately.
 
 
-DEVICE 	   = attiny2313
+DEVICE 	   = attiny2313a
 CLOCK      = 1000000
 # PROGRAMMER = -c arduino -b 19200 -P /dev/ttyACM0
 PROGRAMMER = -c buspirate -P /dev/ttyUSB0

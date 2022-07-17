@@ -38,17 +38,15 @@ void println(char* s)
   _delay_ms(10);
 }
 
-void timer_begin(void)
+void sleep_init(void)
 {
-  TCCR1A = 0x00; // Normal counter mode
-  OCR1A = 15625; // OC to 1 second's worth of cycles
-  TIMSK |= _BV(OCIE1A); // Enable OC interrupt
-  TCCR1B |= _BV(CS11) | _BV(CS10); // Start timer at F_CPU/64 (15625 Hz)
+  // Enable watchdog, interrupt, 0.5sec overflow interval
+  WDTCR |= _BV(WDIE) | _BV(WDE) | _BV(WDP2) | _BV(WDP0);
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 }
 
-ISR(TIMER1_COMPA_vect)
+ISR(WDT_OVERFLOW_vect)
 {
-  TCNT1 = 0;
   sleep_disable();
 }
 
@@ -56,10 +54,10 @@ int main(void)
 {
   DDRD = _BV(6);
   serial_begin();
-  timer_begin();
+  sleep_init();
   sei();
 
-  while(1)
+  while (1)
   {
     PORTD ^= _BV(6);
     println("hello");
